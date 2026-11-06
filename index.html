@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMORA AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #050d0a;
+      color: #e2f1eb;
+      font-family: 'Inter', sans-serif;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #050d0a; }
+    ::-webkit-scrollbar-thumb { background: #16382c; border-radius: 4px; }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- Top Navigation Bar -->
+  <header class="flex items-center justify-between px-4 py-3 bg-[#091612] border-b border-[#142e24]">
+    <div class="flex items-center gap-3">
+      <button id="settingsBtn" title="API Key Settings" class="p-2 rounded-lg bg-[#0f241d] border border-[#1c3d31] text-gray-300 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <h1 class="text-xl font-bold tracking-wide text-white">EMORA AI</h1>
+    </div>
+    <button id="newSessionBtn" class="px-4 py-2 rounded-xl bg-[#10b981] hover:bg-[#059669] text-[#042419] font-semibold text-sm transition">
+      New Research Session
+    </button>
+  </header>
+
+  <!-- Mode Selector Bar -->
+  <div class="bg-[#091612] px-4 pt-3 pb-2 border-b border-[#142e24]">
+    <div class="flex gap-2 overflow-x-auto pb-2" id="modeContainer">
+      <button data-mode="Simple" class="mode-btn px-4 py-1.5 rounded-xl text-sm font-semibold bg-[#10b981] text-[#042419] whitespace-nowrap transition">
+        Simple
+      </button>
+      <button data-mode="Vet Student" class="mode-btn px-4 py-1.5 rounded-xl text-sm font-medium bg-[#0d1f19] text-gray-300 border border-[#1b3b2f] whitespace-nowrap transition">
+        Vet Student
+      </button>
+      <button data-mode="Scientific" class="mode-btn px-4 py-1.5 rounded-xl text-sm font-medium bg-[#0d1f19] text-gray-300 border border-[#1b3b2f] whitespace-nowrap transition">
+        Scientific
+      </button>
+      <button data-mode="Research" class="mode-btn px-4 py-1.5 rounded-xl text-sm font-medium bg-[#0d1f19] text-gray-300 border border-[#1b3b2f] whitespace-nowrap transition">
+        Research
+      </button>
+    </div>
+
+    <!-- Sub-bar: Active Model & Save Thread -->
+    <div class="flex items-center justify-between pt-2 pb-1 text-xs text-gray-400">
+      <div class="flex items-center gap-2 truncate">
+        <span id="currentModeLabel" class="text-gray-300">Simple</span>
+        <span>&middot;</span>
+        <span class="mono text-[#2dd4bf] text-xs">llama-3.3-70b-versatile</span>
+      </div>
+      <button id="saveThreadBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d1f19] border border-[#1b3b2f] text-gray-300 hover:text-white">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+        </svg>
+        <span>Save Thread</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat Messages Area -->
+  <main id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
+    <!-- Initial Welcome Note -->
+    <div class="p-4 rounded-2xl bg-[#0b1f17] border border-[#173d2e] text-sm text-gray-300">
+      Welcome to <span class="text-[#10b981] font-semibold">EMORA AI</span>. Tap the menu icon (<span class="text-white">☰</span>) in the top-left to set your free <strong>Groq</strong> or <strong>Gemini</strong> API key, then ask any question below.
+    </div>
+  </main>
+
+  <!-- Bottom Input Area -->
+  <footer class="p-3 bg-[#091612] border-t border-[#142e24] space-y-2.5">
+    <div class="flex items-center gap-2">
+      <button id="genImageBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0e221b] border border-[#1c3d31] text-xs text-gray-300 hover:text-white">
+        <svg class="w-4 h-4 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Generate Image in Chat
+      </button>
+
+      <button id="newThreadBtn" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0e221b] border border-[#1c3d31] text-xs text-gray-300 hover:text-white">
+        <span>+ New Thread</span>
+      </button>
+    </div>
+
+    <form id="chatForm" class="flex items-center gap-2">
+      <input
+        id="userInput"
+        type="text"
+        placeholder="Ask EMORA AI in Simple mode..."
+        autocomplete="off"
+        class="flex-1 px-4 py-3 rounded-xl bg-[#050d0a] border border-[#1b3b2f] text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981]"
+      />
+      <button
+        type="submit"
+        class="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0c7a56] hover:bg-[#10b981] text-white hover:text-[#042419] font-semibold text-sm transition whitespace-nowrap"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+        Send Inquiry
+      </button>
+    </form>
+  </footer>
+
+  <!-- API Key Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-50">
+    <div class="bg-[#0b1f17] border border-[#1c4736] rounded-2xl max-w-md w-full p-5 space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-bold text-white">API Configuration</h2>
+        <button id="closeModalBtn" class="text-gray-400 hover:text-white">&times;</button>
+      </div>
+      <p class="text-xs text-gray-400">
+        To prevent the <code>&lt;!doctype is not valid JSON</code> error, connect directly to Groq (for <code>llama-3.3-70b-versatile</code>) or Google Gemini.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-300 mb-1">Provider</label>
+          <select id="providerSelect" class="w-full px-3 py-2 rounded-lg bg-[#050d0a] border border-[#1b3b2f] text-sm text-white">
+            <option value="groq">Groq API (llama-3.3-70b-versatile)</option>
+            <option value="gemini">Google Gemini API (gemini-2.5-flash)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-300 mb-1">API Key</label>
+          <input
+            id="apiKeyInput"
+            type="password"
+            placeholder="Paste your gsk_... or AIza... key here"
+            class="w-full px-3 py-2 rounded-lg bg-[#050d0a] border border-[#1b3b2f] text-sm text-white focus:outline-none focus:border-[#10b981]"
+          />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="saveSettingsBtn" class="px-4 py-2 rounded-xl bg-[#10b981] text-[#042419] font-semibold text-sm">
+          Save Key
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let currentMode = 'Simple';
+    let lastUserMessage = '';
+    let conversationHistory = [];
+
+    const systemPrompts = {
+      'Simple': 'You are EMORA AI in Simple Mode. Explain concepts clearly, concisely, and in easy-to-understand everyday language.',
+      'Vet Student': 'You are EMORA AI in Vet Student Mode. Explain veterinary medicine, anatomy, pathology, and pharmacology tailored for veterinary students with clinical relevance.',
+      'Scientific': 'You are EMORA AI in Scientific Mode. Provide rigorous, mechanism-focused scientific explanations using accurate terminology.',
+      'Research': 'You are EMORA AI in Research Mode. Provide deep academic analysis, experimental considerations, differential diagnoses, and structured evidence-based insights.'
+    };
+
+    // Elements
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const currentModeLabel = document.getElementById('currentModeLabel');
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    const settingsModal = document.getElementById('settingsModal');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const providerSelect = document.getElementById('providerSelect');
+
+    // Load saved settings
+    apiKeyInput.value = localStorage.getItem('emora_api_key') || '';
+    providerSelect.value = localStorage.getItem('emora_provider') || 'groq';
+
+    // Mode Switching
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentMode = btn.dataset.mode;
+        currentModeLabel.textContent = currentMode;
+        userInput.placeholder = `Ask EMORA AI in ${currentMode} mode...`;
+
+        modeButtons.forEach(b => {
+          b.className = 'mode-btn px-4 py-1.5 rounded-xl text-sm font-medium bg-[#0d1f19] text-gray-300 border border-[#1b3b2f] whitespace-nowrap transition';
+        });
+        btn.className = 'mode-btn px-4 py-1.5 rounded-xl text-sm font-semibold bg-[#10b981] text-[#042419] whitespace-nowrap transition';
+      });
+    });
+
+    // Settings Modal Handlers
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+      settingsModal.classList.remove('hidden');
+      settingsModal.classList.add('flex');
+    });
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+      settingsModal.classList.remove('flex');
+    });
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      localStorage.setItem('emora_api_key', apiKeyInput.value.trim());
+      localStorage.setItem('emora_provider', providerSelect.value);
+      settingsModal.classList.add('hidden');
+      settingsModal.classList.remove('flex');
+    });
+
+    // Format Current Time
+    function getFormattedTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Add Message Card to UI
+    function appendUserCard(text) {
+      const div = document.createElement('div');
+      div.className = 'p-4 rounded-2xl bg-[#0b2219] border border-[#173d2e] space-y-2';
+      div.innerHTML = `
+        <div class="flex items-center justify-between text-xs border-b border-[#16382b] pb-2">
+          <div>
+            <span class="font-semibold text-white">Researcher Inquiry</span>
+            <span class="mx-1 text-gray-500">&middot;</span>
+            <span class="text-[#10b981]">${currentMode} Mode</span>
+          </div>
+          <span class="mono text-gray-400">${getFormattedTime()}</span>
+        </div>
+        <div class="text-gray-100 text-sm whitespace-pre-wrap pt-1">${escapeHtml(text)}</div>
+      `;
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function appendResponseCard(text) {
+      const div = document.createElement('div');
+      div.className = 'p-4 rounded-2xl bg-[#091813] border border-[#173d2e] space-y-2';
+      div.innerHTML = `
+        <div class="flex items-center justify-between text-xs border-b border-[#143025] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-[#10b981]">EMORA AI</span>
+            <span class="text-gray-500">&middot;</span>
+            <span class="mono text-xs text-gray-400">llama-3.3-70b-versatile</span>
+          </div>
+          <span class="mono text-gray-400">${getFormattedTime()}</span>
+        </div>
+        <div class="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap pt-1">${escapeHtml(text)}</div>
+      `;
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function appendErrorCard(errorMsg) {
+      const div = document.createElement('div');
+      div.className = 'p-4 rounded-2xl bg-[#1f0d10] border border-[#5c1f27] space-y-3';
+      div.innerHTML = `
+        <div class="flex items-start gap-2.5 text-sm text-[#f87171]">
+          <span class="font-bold">!</span>
+          <div><strong class="text-[#fca5a5]">Request Error:</strong> ${escapeHtml(errorMsg)}</div>
+        </div>
+        <button onclick="retryLastRequest(this)" class="w-full py-2.5 rounded-xl bg-[#4c151b] hover:bg-[#631c24] text-gray-100 text-sm font-medium transition">
+          Retry Request
+        </button>
+      `;
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // Retry Logic
+    window.retryLastRequest = function(btnElement) {
+      const errorCard = btnElement.closest('div');
+      if (errorCard) errorCard.remove();
+      if (lastUserMessage) sendRequestToAI(lastUserMessage);
+    };
+
+    // API Call with Safe JSON Checking
+    async function sendRequestToAI(promptText) {
+      const apiKey = localStorage.getItem('emora_api_key') || '';
+      const provider = localStorage.getItem('emora_provider') || 'groq';
+
+      if (!apiKey) {
+        appendErrorCard('Missing API Key. Tap the top-left menu button (☰) to enter your Groq or Gemini API key.');
+        return;
+      }
+
+      try {
+        let response;
+        if (provider === 'groq') {
+          response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                { role: 'system', content: systemPrompts[currentMode] },
+                ...conversationHistory,
+                { role: 'user', content: promptText }
+              ],
+              temperature: 0.6
+            })
+          });
+        } else {
+          // Gemini API
+          response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompts[currentMode] }] },
+              contents: [{ role: 'user', parts: [{ text: promptText }] }]
+            })
+          });
+        }
+
+        // Prevent <!doctype html> JSON parse crash
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Server returned non-JSON response (${response.status}). Check your API endpoint or internet connection.`);
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error?.message || `API Error (${response.status})`);
+        }
+
+        const reply = provider === 'groq'
+          ? data.choices?.[0]?.message?.content
+          : data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        conversationHistory.push({ role: 'user', content: promptText });
+        conversationHistory.push({ role: 'assistant', content: reply || 'No response received.' });
+
+        appendResponseCard(reply || 'No response received.');
+      } catch (err) {
+        appendErrorCard(err.message);
+      }
+    }
+
+    // Handle Form Submit
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      lastUserMessage = text;
+      userInput.value = '';
+      appendUserCard(text);
+      sendRequestToAI(text);
+    });
+
+    // Clear Thread Buttons
+    function resetSession() {
+      conversationHistory = [];
+      chatContainer.innerHTML = '';
+    }
+    document.getElementById('newSessionBtn').addEventListener('click', resetSession);
+    document.getElementById('newThreadBtn').addEventListener('click', resetSession);
+
+    // Save Thread Button
+    document.getElementById('saveThreadBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(conversationHistory, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `emora-research-thread-${Date.now()}.json`;
+      a.click();
+    });
+  </script>
+</body>
+</html>
